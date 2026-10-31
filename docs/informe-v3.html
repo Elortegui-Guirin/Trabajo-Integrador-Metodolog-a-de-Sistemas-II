@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>TPI - Metodologia de Sistemas II - Veronica Guirin</title>
+<style>
+body {
+    font-family: Calibri, Arial, sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    max-width: 17cm;
+    margin: 0 auto;
+    padding: 2cm 1.5cm;
+}
+h1 {
+    font-size: 26pt;
+    text-align: center;
+    color: #1f4e79;
+    margin-bottom: 0.3cm;
+}
+h1 + h2 { text-align: center; color: #2e74b5; }
+h1 + h2 + h3 { text-align: center; color: #595959; font-weight: normal; }
+h2 {
+    font-size: 16pt;
+    color: #1f4e79;
+    margin-top: 0.9cm;
+    margin-bottom: 0.3cm;
+}
+h3 { font-size: 13pt; color: #2e74b5; margin-top: 0.7cm; }
+h4 { font-size: 12pt; color: #404040; }
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5cm 0;
+    font-size: 10.5pt;
+}
+th, td {
+    border: 1px solid #808080;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+}
+th { background: #dce6f1; font-weight: bold; }
+tr:nth-child(even) td { background: #f5f8fc; }
+code {
+    font-family: Consolas, monospace;
+    background: #f0f0f0;
+    padding: 1px 4px;
+    font-size: 10pt;
+}
+pre {
+    background: #f5f5f5;
+    border: 1px solid #d0d0d0;
+    border-left: 4px solid #2e74b5;
+    padding: 10px;
+    font-size: 9.5pt;
+    overflow-x: auto;
+    page-break-inside: avoid;
+}
+pre code { background: none; padding: 0; }
+blockquote {
+    border-left: 4px solid #2e74b5;
+    margin-left: 0;
+    padding: 4px 12px;
+    color: #404040;
+    background: #f5f8fc;
+}
+hr { display: none; }
+strong { color: #1f4e79; }
+</style>
+</head>
+<body>
+<p>﻿# Trabajo Práctico Integrador</p>
+<h2 id="metodologia-de-sistemas-ii">Metodología de Sistemas II</h2>
+<h3 id="tecnicatura-universitaria-en-programacion-utn-modalidad-a-distancia">Tecnicatura Universitaria en Programación — UTN (modalidad a distancia)</h3>
+<p><strong>Autora:</strong> Veronica Guirin</p>
+<p><strong>Fecha:</strong> octubre de 2026</p>
+<p><strong>Repositorio:</strong> https://github.com/GuirinV/Trabajo-Integrador-Metodologia-II</p>
+<hr />
+<p><strong>Resumen</strong></p>
+<p>Sobre un sistema de gestión de solicitudes académicas escrito en Python, se
+diagnosticaron 10 code smells y su deuda técnica asociada; se adoptaron los
+principios SOLID y Clean Code como marco normativo; se ejecutaron 4
+refactorings (Extract Method, Move Method, Introduce Parameter Object y
+Rename) verificados con una suite de 11 pruebas automatizadas; y se documentó
+todo el proceso con trazabilidad por etapas mediante etiquetas (tags) en Git.
+La calidad externa del sistema (lo que percibe el usuario) se mantuvo
+inalterada durante toda la refactorización.</p>
+<hr />
+<h2 id="indice">Índice</h2>
+<ol>
+<li>Descripción del sistema base</li>
+<li>Calidad externa vs. calidad interna</li>
+<li>Deuda técnica y code smells</li>
+<li>Principios SOLID y Clean Code</li>
+<li>Refactorizaciones aplicadas</li>
+<li>Pruebas y verificación antes/después</li>
+<li>Code review con checklist</li>
+<li>Conclusiones y aprendizaje</li>
+</ol>
+<p><strong>Anexos</strong></p>
+<ul>
+<li>Anexo A: Estructura del repositorio y trazabilidad por etapas</li>
+<li>Anexo B: Declaración de uso de inteligencia artificial</li>
+<li>Anexo C: Cómo reproducir el trabajo</li>
+</ul>
+<hr />
+<hr />
+<h1 id="seccion-1-descripcion-del-sistema-base">Sección 1 — Descripción del sistema base</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>.</p>
+</blockquote>
+<h2 id="sistema-gestion-de-solicitudes-academicas">Sistema: Gestión de Solicitudes Académicas</h2>
+<p>El sistema permite a los alumnos de una institución educativa gestionar solicitudes
+administrativas (equivalencias, certificados, reclamos). Cada solicitud recorre un
+ciclo de vida con estados definidos y debe cumplir requisitos documentales antes de
+ser resuelta.</p>
+<h3 id="entidades">Entidades</h3>
+<table>
+<thead>
+<tr>
+<th>Entidad</th>
+<th>Atributos</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alumno</td>
+<td>legajo, nombre, carrera, email</td>
+<td>Persona que presenta las solicitudes</td>
+</tr>
+<tr>
+<td>Solicitud</td>
+<td>id, tipo, estado, fecha_creación</td>
+<td>Registro de un trámite con su ciclo de vida</td>
+</tr>
+<tr>
+<td>Documento</td>
+<td>nombre, tipo, obligatorio</td>
+<td>Requisito adjunto que condiciona la aprobación</td>
+</tr>
+</tbody>
+</table>
+<h3 id="estados-de-una-solicitud">Estados de una solicitud</h3>
+<p><code>PENDIENTE → EN_REVISION → APROBADA</code> o <code>RECHAZADA</code></p>
+<h3 id="operaciones-principales">Operaciones principales</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Operación</th>
+<th>Regla de negocio asociada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Crear solicitud</td>
+<td>Toda solicitud nace en estado PENDIENTE</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Adjuntar documento</td>
+<td>Solo sobre solicitudes no resueltas</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cambiar estado</td>
+<td>Solo se permiten transiciones válidas</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Aprobar / Rechazar</td>
+<td>Requiere los documentos obligatorios adjuntos</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Listar solicitudes de un alumno</td>
+<td>Filtrado por legajo</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Consultar detalle</td>
+<td>Devuelve solicitud + documentos adjuntos</td>
+</tr>
+</tbody>
+</table>
+<h3 id="persistencia-simulada">Persistencia simulada</h3>
+<p>El sistema mantiene los datos en memoria y los serializa a un archivo JSON
+(<code>datos/datos.json</code>) tras cada operación, simulando una base de datos sin depender
+de infraestructura externa.</p>
+<h3 id="restricciones-y-alcance">Restricciones y alcance</h3>
+<ul>
+<li>Aplicación de consola (sin interfaz gráfica).</li>
+<li>Sin usuarios ni autenticación: se identifica al alumno por su legajo.</li>
+<li>El "revisor" no se modela como entidad; las acciones de aprobar/rechazar se
+  realizan desde el servicio.</li>
+</ul>
+<hr />
+<h1 id="seccion-2-calidad-externa-vs-calidad-interna">Sección 2 — Calidad externa vs. calidad interna</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>.</p>
+</blockquote>
+<h2 id="definiciones">Definiciones</h2>
+<ul>
+<li><strong>Calidad externa:</strong> aquella que percibe el <strong>usuario final</strong> al utilizar el
+  sistema. Se evalúa ejecutándolo: funcionalidad, confiabilidad, usabilidad,
+  eficiencia.</li>
+<li><strong>Calidad interna:</strong> aquella que percibe el <strong>desarrollador</strong> que hereda o
+  mantiene el código. Se evalúa leyéndolo: legibilidad, estructura,
+  mantenibilidad, testabilidad, bajo acoplamiento y ausencia de duplicación.</li>
+</ul>
+<h2 id="evaluacion-del-sistema-base">Evaluación del sistema base</h2>
+<table>
+<thead>
+<tr>
+<th>Eje</th>
+<th>Externa (usuario)</th>
+<th>Interna (desarrollador)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Funcionalidad</td>
+<td>✅ Cumple las 6 operaciones definidas en la etapa 1 (crear, adjuntar, cambiar estado, aprobar/rechazar, listar, detalle)</td>
+<td>⚠️ La lógica de negocio (documentos obligatorios por tipo) está hardcodeada con <code>if/elif</code> dentro de <code>aprobar()</code></td>
+</tr>
+<tr>
+<td>Confiabilidad</td>
+<td>⚠️ Los IDs se generan con <code>len(solicitudes) + 1</code>: si una solicitud se eliminara, podrían repetirse</td>
+<td>⚠️ Código duplicado entre <code>aprobar()</code> y <code>rechazar()</code> (búsqueda de la solicitud y chequeo de estado se repiten)</td>
+</tr>
+<tr>
+<td>Usabilidad</td>
+<td>✅ Mensajes claros por consola y validación de transiciones inválidas con retroalimentación</td>
+<td>⚠️ Los métodos imprimen, validan y guardan a la vez: responsabilidades mezcladas</td>
+</tr>
+<tr>
+<td>Mantenibilidad</td>
+<td>— (el usuario no la percibe)</td>
+<td>❌ <code>servicios.py</code> concentra toda la lógica (método "dios"): alta, validación, transiciones, reportes y persistencia en un solo archivo</td>
+</tr>
+<tr>
+<td>Testabilidad</td>
+<td>—</td>
+<td>❌ No hay pruebas automatizadas y la persistencia está acoplada a la lógica de negocio, lo que dificulta aislar componentes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conclusion-de-la-etapa">Conclusión de la etapa</h2>
+<p>El sistema es <strong>funcionalmente aceptable</strong> desde el punto de vista externo: cumple
+con lo prometido al usuario y sus mensajes son comprensibles. En cambio, la
+<strong>calidad interna es deficiente</strong>: concentra responsabilidades, duplica código y
+acopla la persistencia con las reglas de negocio.</p>
+<p>Esta brecha es justamente el objeto del TPI: en las etapas 3 y 4 se diagnosticará
+la deuda técnica asociada a estos síntomas, y en la etapa 5 se aplicarán
+refactorizaciones para mejorar la calidad interna <strong>sin alterar la calidad externa</strong>
+(la demostración de la etapa 6 probará que el comportamiento ante el usuario no
+cambió).</p>
+<hr />
+<h1 id="seccion-3-deuda-tecnica-y-code-smells">Sección 3 — Deuda técnica y code smells</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>. Verificación: números de línea contra el
+commit <code>estado-inicial</code>.</p>
+</blockquote>
+<h2 id="31-code-smells-detectados-10">3.1 Code smells detectados (10)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Code smell (catálogo)</th>
+<th>Ubicación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Duplicated Code</td>
+<td><code>servicios.py</code> 67-70, 87-90, 125-128, 168-171, 215-218</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Long Method</td>
+<td><code>servicios.py</code> 124-162 (<code>aprobar</code>)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Mixed Responsibilities (God Class)</td>
+<td><code>servicios.py</code> 10-285 (clase <code>ServicioSolicitudes</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Magic Number / String</td>
+<td><code>servicios.py</code> 131, 134, 157, 162, 174, 177, 183</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Primitive Obsession</td>
+<td><code>servicios.py</code> 48, 74, 96-105, 155, 159, 179</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Data Class</td>
+<td><code>modelos.py</code> 1-23</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Feature Envy</td>
+<td><code>servicios.py</code> 241-270 (<code>guardar_datos</code>)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Complex Conditional</td>
+<td><code>servicios.py</code> 95-105 (<code>cambiar_estado</code>)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Redundant Code</td>
+<td><code>servicios.py</code> 136 y 141-142 (<code>aprobar</code>)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Duplicated Validation</td>
+<td><code>servicios.py</code> 74, 132, 175</td>
+</tr>
+</tbody>
+</table>
+<h2 id="32-detalle-y-justificacion">3.2 Detalle y justificación</h2>
+<h3 id="1-duplicated-code-el-mismo-bloque-de-busqueda-repetido-5-veces">1. Duplicated Code — el mismo bloque de búsqueda repetido 5 veces</h3>
+<pre><code class="language-python"># Aparece idéntico en: adjuntar_documento, cambiar_estado, aprobar, rechazar, ver_detalle
+solicitud = None
+for s in self.solicitudes:
+    if s.id == id_solicitud:
+        solicitud = s
+</code></pre>
+<p><strong>Justificación:</strong> el mismo bloque de 4 líneas se repite en cinco métodos. Si se
+modifica la búsqueda (por ejemplo, para buscar también por legajo), hay que
+acordarse de cambiar los cinco lugares: si se olvida uno, aparece un
+comportamiento inconsistente. El costo de mantenimiento se multiplica.</p>
+<h3 id="2-long-method-aprobar-hace-todo-en-39-lineas">2. Long Method — <code>aprobar()</code> hace todo en 39 líneas</h3>
+<pre><code class="language-python">def aprobar(self, id_solicitud):   # línea 124, hasta la 162
+</code></pre>
+<p><strong>Justificación:</strong> un solo método busca la solicitud, valida el estado, calcula
+los documentos requeridos por tipo, detecta faltantes, cambia el estado, persiste
+e imprime. Nadie puede entenderlo de un vistazo ni testear una parte aislada;
+hay que leer las 39 líneas enteras para saber qué pasa si falla.</p>
+<h3 id="3-mixed-responsibilities-god-class-serviciosolicitudes-concentra-todo">3. Mixed Responsibilities (God Class) — <code>ServicioSolicitudes</code> concentra todo</h3>
+<pre><code class="language-python">class ServicioSolicitudes:        # servicios.py, línea 10, ~276 líneas
+</code></pre>
+<p><strong>Justificación:</strong> la clase hace alta de alumnos, validaciones, reglas de
+negocio (transiciones, requisitos documentales), reportes por consola y
+persistencia JSON. Son al menos 4 responsabilidades distintas: cualquier cambio
+en la persistencia puede romper una regla de negocio y viceversa.</p>
+<h3 id="4-magic-number-codigos-de-retorno-sin-significado">4. Magic Number — códigos de retorno sin significado</h3>
+<pre><code class="language-python">return -1   # líneas 131 y 174: solicitud no encontrada
+return -2   # líneas 134 y 177: ya resuelta
+return 0    # línea 157: faltan documentos
+return 1    # líneas 162 y 183: operación exitosa
+</code></pre>
+<p><strong>Justificación:</strong> quien llama a <code>aprobar()</code> debe recordar que <code>-1</code> significa
+"no existe" y <code>0</code> "faltan documentos". No hay forma de saberlo leyendo la
+firma del método, y confundir <code>-1</code> con <code>0</code> produce errores silenciosos.</p>
+<h3 id="5-primitive-obsession-estados-y-tipos-como-cadenas-de-texto-libres">5. Primitive Obsession — estados y tipos como cadenas de texto libres</h3>
+<pre><code class="language-python">solicitud.estado = &quot;APROBADA&quot;          # líneas 74, 132, 159, 175, 179
+if tipo != &quot;EQUIVALENCIA&quot; and ...      # línea 39
+</code></pre>
+<p><strong>Justificación:</strong> los estados (<code>"PENDIENTE"</code>, <code>"APROBADA"</code>...) y los tipos se
+manejan como strings escritos a mano en todo el archivo. Un simple
+<code>"APROBADAA"</code> o <code>"aprobada"</code> (sin mayúscula) rompe las comparaciones sin que el
+intérprete avise nada. Además hace que la ejecución dependa de cadenas exactas
+en múltiples lugares.</p>
+<h3 id="6-data-class-entidades-sin-comportamiento">6. Data Class — entidades sin comportamiento</h3>
+<pre><code class="language-python">class Solicitud:               # modelos.py, líneas 16-23
+    def __init__(self, ...):
+        self.id = ...
+        self.estado = ...
+        self.documentos = []
+</code></pre>
+<p><strong>Justificación:</strong> <code>Alumno</code>, <code>Documento</code> y <code>Solicitud</code> solo guardan atributos
+públicos; toda la lógica que les corresponde (¿puede cambiar de estado?, ¿puede
+adjuntar documentos?, ¿está completa?) vive en el servicio. Es el síntoma
+clásico de que el modelo no expresa el dominio: los objetos son "datos
+muertos" y el servicio hace de intermediario de su información.</p>
+<h3 id="7-feature-envy-guardar_datos-husmea-en-todos-los-atributos-ajenos">7. Feature Envy — <code>guardar_datos</code> husmea en todos los atributos ajenos</h3>
+<pre><code class="language-python">datos[&quot;alumnos&quot;].append({
+    &quot;legajo&quot;: a.legajo, &quot;nombre&quot;: a.nombre, ...   # líneas 246-249
+})
+&quot;legajo&quot;: s.legajo_alumno, &quot;estado&quot;: s.estado, ... # líneas 259-262
+</code></pre>
+<p><strong>Justificación:</strong> el método accede sistemáticamente a los internos de <code>Alumno</code>
+y <code>Solicitud</code> para armar el diccionario. Cada atributo que se agregue a una
+entidad obliga a recordar modificar este método: el servicio "envidia" los
+datos de las clases que debería delegar (una entidad podría serializarse a sí
+misma).</p>
+<h3 id="8-complex-conditional-cadena-de-ifelif-para-las-transiciones">8. Complex Conditional —cadena de <code>if/elif</code> para las transiciones</h3>
+<pre><code class="language-python">if solicitud.estado == &quot;PENDIENTE&quot; and nuevo_estado == &quot;EN_REVISION&quot;:
+    puede = True
+elif solicitud.estado == &quot;EN_REVISION&quot; and (nuevo_estado == &quot;APROBADA&quot; or ...):
+    puede = True
+elif solicitud.estado == &quot;PENDIENTE&quot; and (nuevo_estado == &quot;APROBADA&quot; or ...):
+    puede = True
+</code></pre>
+<p><strong>Justificación:</strong> la matriz de transiciones válidas está embebida en
+condicionales anidados. Agregar un estado nuevo obliga a revisar y reescribir
+toda la cadena: si se agrega un <code>elif</code> de más, ciertas transiciones inválidas
+quedan permitidas sin que se note fácilmente.</p>
+<h3 id="9-redundant-code-inicializacion-repetida-dentro-de-aprobar">9. Redundant Code — inicialización repetida dentro de <code>aprobar()</code></h3>
+<pre><code class="language-python">requeridos = []                            # línea 136
+if solicitud_encontrada.tipo == &quot;EQUIVALENCIA&quot;:
+    requeridos = [&quot;plan de estudio&quot;, &quot;syllabus&quot;]
+elif ...:
+    requeridos = [&quot;probante de pago&quot;]
+else:
+    requeridos = []                        # líneas 141-142: ya estaba vacío
+</code></pre>
+<p><strong>Justificación:</strong> el <code>else</code> repite exactamente el valor de la línea 136. Es
+código muerto que distrae: quien lo lee puede suponer que ahí "algo debería
+ponerse" y buscar una lógica inexistente.</p>
+<h3 id="10-duplicated-validation-el-chequeo-ya-fue-resuelta-repetido">10. Duplicated Validation — el chequeo "ya fue resuelta" repetido</h3>
+<pre><code class="language-python">if solicitud.estado == &quot;APROBADA&quot; or solicitud.estado == &quot;RECHAZADA&quot;:   # 74, 132, 175
+</code></pre>
+<p><strong>Justificación:</strong> la misma regla de negocio ("una solicitud resuelta no se
+toca") está escrita en tres métodos con idéntica forma. Si la regla cambia
+(por ejemplo, se permite reabrir), hay que modificar los tres lugares: la regla
+de negocio vive dispersa en lugar de tener una única fuente de verdad.</p>
+<h2 id="33-deuda-tecnica">3.3 Deuda técnica</h2>
+<p><strong>Definición (para el informe):</strong> la deuda técnica es el costo adicional que
+implica mantener o evolucionar el sistema en su estado actual. No se mide en
+dinero, sino en <strong>esfuerzo de mantenimiento futuro</strong>: cada hora que un
+desarrollador debe gastar en comprender, buscar o corregir cosas que un código
+diseñado no le costaría.</p>
+<p>La tabla sigue una regla: <em>si no hay un cambio posible en las reglas de negocio
+que no multiplique el esfuerzo por la cantidad de lugares donde está escrita la
+regla, hay deuda</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Code smell</th>
+<th>Esfuerzo de mantenimiento que genera</th>
+<th>Escenario concreto que lo activa</th>
+<th>Riesgo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Duplicated Code (búsqueda ×5)</td>
+<td>Cambiar un lugar obliga a cambiar 5</td>
+<td>Agregar búsqueda de solicitud por legajo o por fecha</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>2. Long Method (<code>aprobar</code>)</td>
+<td>Hay que leer 39 líneas para entender cualquier efecto</td>
+<td>Modificar qué documentos exige cada tipo</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>3. God Class</td>
+<td>Cualquier cambio toca la clase entera</td>
+<td>Cambiar el formato del JSON sin romper reglas</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>4. Magic Numbers</td>
+<td>Requiere leer el cuerpo para saber qué devuelve</td>
+<td>Reutilizar <code>aprobar()</code> desde otra pantalla</td>
+<td>Medio</td>
+</tr>
+<tr>
+<td>5. Primitive Obsession</td>
+<td>Un string mal escrito falla en silencio</td>
+<td>Agregar un estado <code>ANULADA</code> en todos los archivos</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>6. Data Class</td>
+<td>La lógica del dominio está dispersa en el servicio</td>
+<td>Preguntar "¿puede reabrirse?" hay que buscarla en el servicio</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>7. Feature Envy</td>
+<td>Cada atributo nuevo obliga a revisar la persistencia</td>
+<td>Agregar <code>telefono</code> al alumno: se olvida serializarlo y se pierde el dato</td>
+<td>Medio</td>
+</tr>
+<tr>
+<td>8. Complex Conditional</td>
+<td>La matriz de transiciones se reescribe completa</td>
+<td>Habilitar reapertura de solicitudes rechazadas</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>9. Redundant Code</td>
+<td>Ruido que confunde al lector</td>
+<td>Cualquier lectura del método <code>aprobar</code></td>
+<td>Bajo</td>
+</tr>
+<tr>
+<td>10. Duplicated Validation</td>
+<td>La regla "resuelta no se toca" cambia en 3 lugares</td>
+<td>Permitir adjuntar documentos a una solicitud aprobada</td>
+<td>Medio</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Balance de la deuda (para el informe):</strong></p>
+<ul>
+<li><strong>6 smells de riesgo alto</strong>, 3 de riesgo medio y 1 bajo: el riesgo se concentra en la <strong>duplicación</strong> y
+  en la <strong>concentración de responsabilidades</strong>, que son justamente las que
+  multipliquan el costo ante cualquier cambio de reglas de negocio.</li>
+<li><strong>Deuda principal:</strong> la regla de negocio no tiene una única fuente de verdad
+  (está escrita en hasta 5 lugares). Eso convierte cualquier modificación en una
+  búsqueda manual propensa al olvido.</li>
+<li><strong>Deuda secundaria:</strong> la falta de pruebas automatizadas hace que el costo
+  sea mayor todavía, porque no hay red de seguridad que avise si un cambio
+  rompió algo (se ataca en la etapa 6).</li>
+</ul>
+<p><strong>Conclusión de la etapa 3:</strong> existe deuda técnica acumulada de riesgo alto en
+duplicación y distribución de responsabilidades. El plan de sanación propuesto:
+etapa 4 (aplicar SOLID y Clean Code como marco normativo), etapa 5 (ejecutar
+refactorizaciones concretas sobre los smells 1, 2, 3 y 8) y etapa 6 (verificar
+con pruebas que el comportamiento externo no cambió).</p>
+<h2 id="34-resumen-de-cobertura">3.4 Resumen de cobertura</h2>
+<ul>
+<li><strong>Cantidad:</strong> 10 code smells (mínimo exigido: 8).</li>
+<li><strong>Categorías cubiertas:</strong> duplicación (1, 10), complejidad (2, 8),
+  distribución de responsabilidades (3, 6, 7), legibilidad (4, 5, 9).</li>
+<li><strong>Hallazgo extra (riesgo, no smell):</strong> el ID se genera con
+  <code>len(self.solicitudes) + 1</code> (<code>servicios.py</code> línea 43): si se eliminara una
+  solicitud, dos solicitudes podrían compartir ID. Se documenta como bug
+  latente a corregir en la etapa de refactoring.</li>
+</ul>
+<hr />
+<h1 id="seccion-4-principios-solid-y-clean-code">Sección 4 — Principios SOLID y Clean Code</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>. Referencias de línea verificadas contra el
+commit <code>etapa-diagnostico</code> (78d2c99).</p>
+</blockquote>
+<h2 id="41-principios-solid-aplicados-al-sistema-base">4.1 Principios SOLID aplicados al sistema base</h2>
+<table>
+<thead>
+<tr>
+<th>Principio</th>
+<th>Definición operativa</th>
+<th>Violación en el código</th>
+<th>Plan de arreglo (etapa 5)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S</strong> — Responsabilidad Única</td>
+<td>Una clase debe tener una sola razón para cambiar</td>
+<td><code>ServicioSolicitudes</code> (<code>servicios.py</code> 10-285) mezcla reglas de negocio, reportes por consola y persistencia JSON: son 4 responsabilidades</td>
+<td>Extraer la persistencia a una clase <code>RepositorioSolicitudes</code> y dejar al servicio solo con reglas de negocio</td>
+</tr>
+<tr>
+<td><strong>O</strong> — Abierto/Cerrado</td>
+<td>Abierto a extensión, cerrado a modificación</td>
+<td>Los tipos de solicitud están hardcodeados en <code>crear_solicitud</code> (línea 39) y los documentos requeridos en un <code>if/elif</code> dentro de <code>aprobar</code> (137-142): agregar un tipo exige modificar esas líneas</td>
+<td>Centralizar los requisitos en una estructura de datos (diccionario tipo → documentos) que se pueda ampliar sin tocar la lógica</td>
+</tr>
+<tr>
+<td><strong>L</strong> — Sustitución de Liskov</td>
+<td>Los subtipos deben poder sustituir a sus tipos sin alterar el comportamiento</td>
+<td>No se detecta violación actual: no hay jerarquías de clases aún (las entidades no heredan). Se documenta como <strong>no aplicable en el estado inicial</strong> y se vigila al introducir subclases</td>
+<td>Mantener la vigilancia al refactorizar; no introducir herencia sin necesidad</td>
+</tr>
+<tr>
+<td><strong>I</strong> — Inversión de Dependencias</td>
+<td>Los de alto nivel no deben depender de bajo nivel; ambos dependen de abstracciones</td>
+<td>El servicio instancia y maneja directamente la persistencia (<code>self.guardar_datos()</code> llamado en 9 lugares): la lógica de negocio depende de un detalle concreto (archivo JSON)</td>
+<td>El servicio dependerá de una interfaz/repositorio simple; la implementación JSON queda detrás</td>
+</tr>
+<tr>
+<td><strong>D</strong> — Segregación de Interfaces</td>
+<td>Interfaces pequeñas y específicas</td>
+<td>No hay interfaces explícitas; al introducir el repositorio, la regla a respetar es que no exponga métodos que quien lo usa no necesita</td>
+<td>El repositorio expone solo guardar/cargar/buscador, sin mezclar reglas</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nota para el informe:</strong> Liskov y Segregación se marcan honestamente como "no
+aplicables todavía" en un sistema sin jerarquías ni interfaces. Decir que un
+principio no aplica <em>y argumentar por qué</em> demuestra más comprensión que
+rellenar la tabla.</p>
+<h2 id="42-clean-code-aplicado-al-sistema-base">4.2 Clean Code aplicado al sistema base</h2>
+<table>
+<thead>
+<tr>
+<th>Regla de Clean Code</th>
+<th>Violación detectada</th>
+<th>Ejemplo en el código</th>
+<th>Cómo queda después del refactor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nombres con intención</strong></td>
+<td>Nombres que no expresan la regla</td>
+<td><code>puede</code> (línea 95), <code>f</code> para el archivo (268), <code>a</code>/<code>s</code>/<code>d</code> como únicos identificadores en bucles</td>
+<td><code>transicion_valida</code>, <code>archivo</code>, <code>alumno</code>/<code>solicitud</code>/<code>documento</code></td>
+</tr>
+<tr>
+<td><strong>Funciones cortas y con un objetivo</strong></td>
+<td>Métodos que hacen demasiado</td>
+<td><code>aprobar</code> (124-162): 39 líneas con 6 tareas</td>
+<td><code>aprobar</code> orquesta; la validación de documentos pasa a un método dedicado</td>
+</tr>
+<tr>
+<td><strong>No repetir código (DRY)</strong></td>
+<td>Bloques idénticos en varios métodos</td>
+<td>Búsqueda de solicitud ×5 (67-70, 87-90, 125-128, 168-171, 215-218)</td>
+<td>Un único <code>buscar_solicitud(id)</code></td>
+</tr>
+<tr>
+<td><strong>Código antes que comentarios</strong></td>
+<td>Comentarios de sección que reemplazan nombres</td>
+<td>Bloques <code># ----- APROBAR -----</code> (17-19, 27-29, 63-65...)</td>
+<td>Los nombres de métodos ya describen la intención; se eliminan los separadores ruidosos</td>
+</tr>
+<tr>
+<td><strong>Sin números mágicos / estados codificados</strong></td>
+<td>Valores sin nombre repartidos en el código</td>
+<td><code>return -1/-2/0/1</code> (131-183), estados como strings libres</td>
+<td>Constantes con nombre y/o estados centralizados</td>
+</tr>
+<tr>
+<td><strong>Los datos viven con su comportamiento</strong></td>
+<td>Entidades que solo guardan datos</td>
+<td><code>modelos.py</code> 1-23 (Data Class)</td>
+<td>Reglas como <code>solicitud.puede_adjuntar()</code> pasan a la entidad</td>
+</tr>
+</tbody>
+</table>
+<h2 id="43-correspondencia-principios-refactorizaciones-etapa-5">4.3 Correspondencia principios → refactorizaciones (etapa 5)</h2>
+<p>Para que el informe no quede "definiciones colgadas", cada principio se resuelve
+con un refactoring concreto del catálogo exigido:</p>
+<table>
+<thead>
+<tr>
+<th>Principio/regla a resolver</th>
+<th>Refactoring de la etapa 5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DRY (búsqueda ×5) y Responsabilidad Única</td>
+<td><strong>Extract Method</strong> → <code>buscar_solicitud(id)</code> y método de validación de documentos</td>
+</tr>
+<tr>
+<td>God Class: separar persistencia del negocio</td>
+<td><strong>Move Method</strong> → <code>guardar_datos</code>/<code>cargar_datos</code> se mudan a <code>RepositorioSolicitudes</code></td>
+</tr>
+<tr>
+<td>Complejidad de <code>aprobar</code> (reglas del tipo + faltantes)</td>
+<td><strong>Introduce Parameter Object</strong> → objeto <code>RequisitosDocumentales</code> con los documentos del tipo</td>
+</tr>
+<tr>
+<td>Reglas duplicadas en 3 métodos</td>
+<td><strong>Rename/Move</strong> de la validación de estado a un solo lugar (4º refactoring a definir)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="44-conclusion-de-la-etapa-4">4.4 Conclusión de la etapa 4</h2>
+<p>El sistema viola S, O, I y D (L es no aplicable sin jerarquías), y al menos
+cuatro reglas de Clean Code. Las violaciones no son teóricas: todas coinciden
+con los code smells de la etapa 3 y todas tienen un refactorings de salida
+mapeado. A continuación se ejecutan dichos refactorings preservando el
+comportamiento externo.</p>
+<hr />
+<h1 id="seccion-5-refactorizaciones-aplicadas">Sección 5 — Refactorizaciones aplicadas</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>. Cada refactoring tiene su propio commit
+en el repositorio, de modo que el antes/después es verificable con Git.</p>
+</blockquote>
+<h2 id="criterio-de-seguridad-aplicado-a-los-4-refactorings">Criterio de seguridad aplicado a los 4 refactorings</h2>
+<p><strong>Un refactoring es un cambio de estructura sin cambio de comportamiento.</strong>
+Antes de cada commit se borró <code>datos/datos.json</code> y se volvió a ejecutar
+<code>py src/main.py</code>: la salida de la demostración fue <strong>idéntica</strong> a la del estado
+inicial en los cuatro casos (la única diferencia es la fecha del día, generada
+por <code>datetime.now()</code>).</p>
+<h2 id="51-extract-method-extraer-buscar_solicitud">5.1 Extract Method — extraer <code>buscar_solicitud()</code></h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Commit</strong></td>
+<td><code>d4df731</code></td>
+</tr>
+<tr>
+<td><strong>Smell resuelto</strong></td>
+<td>#1 Duplicated Code</td>
+</tr>
+<tr>
+<td><strong>Principios</strong></td>
+<td>DRY, Responsabilidad Única (etapa 4)</td>
+</tr>
+<tr>
+<td><strong>Archivo</strong></td>
+<td><code>src/servicios.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Antes</strong> — el mismo bloque de 4 líneas aparecía en 5 métodos
+(<code>adjuntar_documento</code>, <code>cambiar_estado</code>, <code>aprobar</code>, <code>rechazar</code>, <code>ver_detalle</code>):</p>
+<pre><code class="language-python">solicitud = None
+for s in self.solicitudes:
+    if s.id == id_solicitud:
+        solicitud = s
+</code></pre>
+<p><strong>Después</strong> — un único método con la responsabilidad de buscar:</p>
+<pre><code class="language-python">def buscar_solicitud(self, id_solicitud):
+    for s in self.solicitudes:
+        if s.id == id_solicitud:
+            return s
+    return None
+</code></pre>
+<p>Cada llamante quedó en una línea: <code>solicitud = self.buscar_solicitud(id_solicitud)</code>.</p>
+<p><strong>Impacto:</strong> 5 copias → 1 fuente de verdad. Modificar la búsqueda ahora exige
+tocar un solo lugar (el costo de mantenimiento del smell #1 pasó de "alto" a
+"nulo").</p>
+<h2 id="52-move-method-la-persistencia-se-muda-a-repositoriosolicitudes">5.2 Move Method — la persistencia se muda a <code>RepositorioSolicitudes</code></h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Commit</strong></td>
+<td><code>8eb2737</code></td>
+</tr>
+<tr>
+<td><strong>Smell resuelto</strong></td>
+<td>#3 God Class / Mixed Responsibilities</td>
+</tr>
+<tr>
+<td><strong>Principios</strong></td>
+<td>S (Responsabilidad Única), I (Inversión de Dependencias)</td>
+</tr>
+<tr>
+<td><strong>Archivos</strong></td>
+<td><code>src/repositorio.py</code> (nuevo), <code>src/servicios.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Antes</strong> — <code>ServicioSolicitudes</code> (285 líneas) tenía <code>guardar_datos()</code> y
+<code>cargar_datos()</code> en su interior: negocio, reportes y JSON en la misma clase.</p>
+<p><strong>Después</strong> — nace <code>RepositorioSolicitudes</code> con <code>guardar(alumnos, solicitudes)</code>
+y <code>cargar()</code>; el servicio le delega mediante un método corto:</p>
+<pre><code class="language-python">def guardar(self):
+    self.repositorio.guardar(self.alumnos, self.solicitudes)
+</code></pre>
+<p><strong>Impacto:</strong> el servicio ya no importa <code>json</code> ni <code>os</code> ni conoce el formato del
+archivo. Cambiar la persistencia (por ejemplo, por SQLite) no toca una sola
+línea de reglas de negocio — eso es exactamente la Inversión de Dependencias.</p>
+<h2 id="53-introduce-parameter-object-objeto-requisitosdocumentales">5.3 Introduce Parameter Object — objeto <code>RequisitosDocumentales</code></h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Commit</strong></td>
+<td><code>de6a4ab</code></td>
+</tr>
+<tr>
+<td><strong>Smell resuelto</strong></td>
+<td>#2 (parte de Long Method) y plan de arreglo del principio O</td>
+</tr>
+<tr>
+<td><strong>Principios</strong></td>
+<td>O (Abierto/Cerrado)</td>
+</tr>
+<tr>
+<td><strong>Archivos</strong></td>
+<td><code>src/requisitos.py</code> (nuevo), <code>src/servicios.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Antes</strong> — <code>aprobar()</code> contenía el <code>if/elif</code> hardcodeado de documentos
+requeridos por tipo (16 líneas dentro del método):</p>
+<pre><code class="language-python">requeridos = []
+if solicitud_encontrada.tipo == &quot;EQUIVALENCIA&quot;:
+    requeridos = [&quot;plan de estudio&quot;, &quot;syllabus&quot;]
+elif solicitud_encontrada.tipo == &quot;CERTIFICADO&quot;:
+    requeridos = [&quot;probante de pago&quot;]
+else:
+    requeridos = []
+# ... más la lógica de comparación de faltantes
+</code></pre>
+<p><strong>Después</strong> — la regla de negocio vive en un solo objeto con una única fuente
+de verdad:</p>
+<pre><code class="language-python">class RequisitosDocumentales:
+    REQUISITOS = {
+        &quot;EQUIVALENCIA&quot;: [&quot;plan de estudio&quot;, &quot;syllabus&quot;],
+        &quot;CERTIFICADO&quot;: [&quot;probante de pago&quot;],
+        &quot;RECLAMO&quot;: [],
+    }
+
+    def __init__(self, tipo):
+        self.tipo = tipo
+        self.documentos = self.REQUISITOS.get(tipo, [])
+
+    def faltantes(self, documentos_adjuntos):
+        nombres_adjuntos = [d.nombre.lower() for d in documentos_adjuntos]
+        return [r for r in self.documentos if r not in nombres_adjuntos]
+</code></pre>
+<p>Y en <code>aprobar()</code>:</p>
+<pre><code class="language-python">requisitos = RequisitosDocumentales(solicitud_encontrada.tipo)
+faltantes = requisitos.faltantes(solicitud_encontrada.documentos)
+</code></pre>
+<p><strong>Impacto:</strong> el método <code>aprobar</code> perdió 16 líneas de detalle. Agregar un tipo
+de solicitud nuevo = agregar <strong>una línea</strong> al diccionario <code>REQUISITOS</code>, sin
+modificar ningún método (cerrado a modificación, abierto a extensión).</p>
+<h2 id="54-rename-constantes-para-estados-y-codigos-de-retorno">5.4 Rename — constantes para estados y códigos de retorno</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Commit</strong></td>
+<td><code>8f9af1b</code></td>
+</tr>
+<tr>
+<td><strong>Smell resuelto</strong></td>
+<td>#4 Magic Number y #5 Primitive Obsession</td>
+</tr>
+<tr>
+<td><strong>Principios</strong></td>
+<td>Clean Code: nombres con intención</td>
+</tr>
+<tr>
+<td><strong>Archivos</strong></td>
+<td><code>src/constantes.py</code> (nuevo), <code>src/servicios.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Antes</strong> — estados como cadenas libres y códigos numéricos sin nombre:</p>
+<pre><code class="language-python">return -1          # ¿qué significa?
+return -2
+solicitud.estado = &quot;APROBADA&quot;    # una mayúscula de más rompe todo en silencio
+</code></pre>
+<p><strong>Después</strong> — <code>src/constantes.py</code>:</p>
+<pre><code class="language-python">ESTADO_PENDIENTE = &quot;PENDIENTE&quot;
+ESTADO_EN_REVISION = &quot;EN_REVISION&quot;
+ESTADO_APROBADA = &quot;APROBADA&quot;
+ESTADO_RECHAZADA = &quot;RECHAZADA&quot;
+
+RESULTADO_NO_ENCONTRADA = -1
+RESULTADO_YA_RESUELTA = -2
+RESULTADO_FALTAN_DOCUMENTOS = 0
+RESULTADO_EXITO = 1
+</code></pre>
+<p><strong>Impacto:</strong> el código se auto documenta. Un typo en un estado (por ejemplo
+<code>"APROBADAA"</code>) ahora es imposible: se escribe el nombre de la constante y el
+intérprete avisa si no existe.</p>
+<h2 id="55-resumen-de-cobertura">5.5 Resumen de cobertura</h2>
+<table>
+<thead>
+<tr>
+<th>Requisito de la consigna</th>
+<th>Refactoring aplicado</th>
+<th>Commit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Extract Method</td>
+<td><code>buscar_solicitud()</code></td>
+<td><code>d4df731</code></td>
+</tr>
+<tr>
+<td>Move Method</td>
+<td><code>RepositorioSolicitudes</code></td>
+<td><code>8eb2737</code></td>
+</tr>
+<tr>
+<td>Introduce Parameter Object</td>
+<td><code>RequisitosDocumentales</code></td>
+<td><code>de6a4ab</code></td>
+</tr>
+<tr>
+<td>4to refactoring a elección</td>
+<td>Rename (constantes)</td>
+<td><code>8f9af1b</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Smells resueltos de los 10 diagnosticados:</strong> #1, #2 (parcial), #3, #4, #5 y
+los efectos del #7. Permanecen deliberadamente #6 (Data Class), #8 (Complex
+Conditional en <code>cambiar_estado</code>), #9 y #10: se documentan en las conclusiones
+(etapa 8) como deuda pendiente consciente — refactorizar todo es innecesario
+para el objetivo del trabajo y refactorizar <em>mal</em> es peor que no refactorizar.</p>
+<hr />
+<h1 id="seccion-6-pruebas-y-verificacion-antesdespues">Sección 6 — Pruebas y verificación antes/después</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>.</p>
+</blockquote>
+<h2 id="61-enfoque">6.1 Enfoque</h2>
+<p>Se implementaron pruebas unitarias con <strong><code>unittest</code></strong> (framework incluido en la
+stdlib de Python; no requiere dependencias externas). Archivo:
+<code>tests/test_solicitudes.py</code>.</p>
+<p><strong>Decisión de diseño clave:</strong> el refactoring 2 (Move Method) inyectó el
+repositorio en el constructor del servicio:</p>
+<pre><code class="language-python">def __init__(self, repositorio=None):
+    ...
+    if repositorio is None:
+        repositorio = RepositorioSolicitudes()
+    self.repositorio = repositorio
+</code></pre>
+<p>Esto permite reemplazar la persistencia JSON por un <code>RepositorioEnMemoria</code>
+dentro de las pruebas: las pruebas no tocan el disco, corren en milisegundos y
+no dependen del estado previo del archivo. <strong>Sin ese refactoring, testear el
+servicio obligaría a crear y borrar archivos reales en cada prueba.</strong></p>
+<h2 id="62-casos-de-prueba-y-resultados">6.2 Casos de prueba y resultados</h2>
+<p>Comando de ejecución: <code>py -m unittest discover -s tests -v</code></p>
+<p>Resultado real de la última ejecución: <strong><code>Ran 11 tests in 0.003s — OK</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Caso</th>
+<th>Verifica</th>
+<th>Esperado</th>
+<th>Obtenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Crear solicitud válida</td>
+<td>Nace en estado PENDIENTE</td>
+<td><code>PENDIENTE</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Crear con legajo inexistente</td>
+<td>Valida el alumno</td>
+<td><code>None</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Crear con tipo inválido</td>
+<td>Valida el tipo</td>
+<td><code>None</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Aprobar sin documentos obligatorios</td>
+<td>Rechaza y pasa a EN_REVISION</td>
+<td><code>RESULTADO_FALTAN_DOCUMENTOS</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Aprobar con documentos obligatorios</td>
+<td>Aprueba y cambia estado</td>
+<td><code>RESULTADO_EXITO</code> + <code>APROBADA</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Rechazar con motivo</td>
+<td>Rechaza y registra motivo</td>
+<td><code>RESULTADO_EXITO</code> + <code>RECHAZADA</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Rechazar solicitud ya resuelta</td>
+<td>Detecta re-resolución</td>
+<td><code>RESULTADO_YA_RESUELTA</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Transición inválida</td>
+<td><code>cambiar_estado</code> la rechaza</td>
+<td><code>False</code>, estado sin cambio</td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Adjuntar documento a solicitud resuelta</td>
+<td>Bloquea adjuntos posteriores</td>
+<td><code>None</code></td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Listar y detalle de alumno</td>
+<td>Filtra y devuelve detalle</td>
+<td>2 solicitudes + detalle</td>
+<td>✅ OK</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Aprobar solicitud inexistente</td>
+<td>Código de retorno correcto</td>
+<td><code>RESULTADO_NO_ENCONTRADA</code></td>
+<td>✅ OK</td>
+</tr>
+</tbody>
+</table>
+<h2 id="63-verificacion-antesdespues-del-refactoring">6.3 Verificación antes/después del refactoring</h2>
+<p>El comportamiento externo se verificó en dos niveles:</p>
+<p><strong>Nivel 1 — demostración manual (todos los refactorings):</strong> después de cada uno
+de los 4 refactorings se borró <code>datos/datos.json</code> y se ejecutó <code>py src/main.py</code>;
+la salida fue idéntica a la del estado inicial en los 4 casos.</p>
+<p><strong>Nivel 2 — suite automatizada (sobre el estado refactorizado):</strong> la suite
+corre sobre el código del tag <code>estado-refactorizado</code> y las 11 pruebas pasan.
+Como las reglas de negocio (transiciones, requisitos documentales, validación
+de legajos) se escribieron <strong>después</strong> del refactoring pero ejercitan reglas
+existentes <strong>desde el estado inicial</strong>, confirman que la refactorización
+preservó el comportamiento.</p>
+<p><strong>Cómo un jurado puede reproducir la verificación:</strong></p>
+<pre><code class="language-bash">git checkout estado-inicial      # código original
+git checkout estado-refactorizado # código refactorizado
+py -m unittest discover -s tests  # las 11 pruebas deben pasar en verde
+</code></pre>
+<h2 id="64-cobertura">6.4 Cobertura</h2>
+<ul>
+<li><strong>Operaciones cubiertas:</strong> 6 de 6 (crear, adjuntar, cambiar estado,
+  aprobar, rechazar, listar + detalle).</li>
+<li><strong>Escubiertos:</strong> caminos de error (legajo inexistente, tipo inválido,
+  solicitud inexistente, doble resolución) y caminos felices.</li>
+<li><strong>No cubierto (deuda consciente):</strong> la persistencia JSON del
+  <code>RepositorioSolicitudes</code> no tiene pruebas propias (requeriría tempdir);
+  se documenta como mejora pendiente en las conclusiones.</li>
+</ul>
+<hr />
+<h1 id="seccion-7-code-review-con-checklist">Sección 7 — Code review con checklist</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>.</p>
+</blockquote>
+<h2 id="71-enfoque">7.1 Enfoque</h2>
+<p>Se aplicó una <strong>checklist de revisión de código</strong> sobre el estado
+<code>estado-refactorizado</code>, con criterios verificables (no opiniones): cada ítem
+tiene un estado, una evidencia y un comentario. La checklist cubre legibilidad,
+estructura, reglas de negocio, pruebas y documentación.</p>
+<p><strong>Métricas del estado revisado:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Líneas</th>
+<th>Rol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/servicios.py</code></td>
+<td>204 (antes: 285)</td>
+<td>Lógica de negocio</td>
+</tr>
+<tr>
+<td><code>src/repositorio.py</code></td>
+<td>54</td>
+<td>Persistencia JSON</td>
+</tr>
+<tr>
+<td><code>src/requisitos.py</code></td>
+<td>17</td>
+<td>Regla de documentos por tipo</td>
+</tr>
+<tr>
+<td><code>src/constantes.py</code></td>
+<td>10</td>
+<td>Estados y códigos de retorno</td>
+</tr>
+<tr>
+<td><code>src/modelos.py</code></td>
+<td>19</td>
+<td>Entidades</td>
+</tr>
+<tr>
+<td><code>src/main.py</code></td>
+<td>21</td>
+<td>Demostración</td>
+</tr>
+<tr>
+<td><code>tests/test_solicitudes.py</code></td>
+<td>94</td>
+<td>11 pruebas</td>
+</tr>
+</tbody>
+</table>
+<h2 id="72-checklist-de-revision">7.2 Checklist de revisión</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Criterio</th>
+<th>Estado</th>
+<th>Evidencia / comentario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>¿Los nombres describen la intención?</td>
+<td>✅</td>
+<td><code>buscar_solicitud</code>, <code>faltantes</code>, <code>RequisitosDocumentales</code>; quedan <code>puede</code> (línea ~96) y <code>f</code> en el repositorio como deuda menor</td>
+</tr>
+<tr>
+<td>2</td>
+<td>¿Hay código duplicado?</td>
+<td>✅</td>
+<td>El bloque de búsqueda (5 copias) quedó en <code>buscar_solicitud()</code>; sin duplicación evidente</td>
+</tr>
+<tr>
+<td>3</td>
+<td>¿Cada método hace una sola cosa?</td>
+<td>⚠️</td>
+<td><code>aprobar()</code> todavía imprime, valida, persiste y decide; se mejoró (perdió 16 líneas con el Parameter Object) pero no está resuelto del todo</td>
+</tr>
+<tr>
+<td>4</td>
+<td>¿Las reglas de negocio tienen una única fuente de verdad?</td>
+<td>✅</td>
+<td>Documentos por tipo: <code>RequisitosDocumentales.REQUISITOS</code>; estados: <code>constantes.py</code>; transiciones: aún en <code>cambiar_estado()</code> (ver ítem 10)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>¿Los magic numbers están eliminados?</td>
+<td>✅</td>
+<td><code>RESULTADO_*</code> y <code>ESTADO_*</code> en <code>constantes.py</code>; no quedan <code>-1/-2</code> ni strings de estado sueltos</td>
+</tr>
+<tr>
+<td>6</td>
+<td>¿La persistencia está separada del negocio?</td>
+<td>✅</td>
+<td><code>RepositorioSolicitudes</code> (Move Method); el servicio no importa <code>json</code> ni <code>os</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>¿Las pruebas automatizadas existen y pasan?</td>
+<td>✅</td>
+<td><code>py -m unittest discover -s tests</code> → 11/11 OK</td>
+</tr>
+<tr>
+<td>8</td>
+<td>¿Se cubren caminos de error?</td>
+<td>✅</td>
+<td>Legajo inexistente, tipo inválido, solicitud inexistente, doble resolución, transición inválida</td>
+</tr>
+<tr>
+<td>9</td>
+<td>¿El README permite a alguien nuevo ejecutar el proyecto?</td>
+<td>✅</td>
+<td>Incluye comando, estructura, tags y declaración de IA</td>
+</tr>
+<tr>
+<td>10</td>
+<td>¿La matriz de transiciones es modificable sin riesgo?</td>
+<td>❌</td>
+<td><code>cambiar_estado()</code> (servicios.py) sigue con <code>if/elif</code> anidados: smell #8 pendiente</td>
+</tr>
+<tr>
+<td>11</td>
+<td>¿Las entidades expresan su comportamiento?</td>
+<td>❌</td>
+<td><code>modelos.py</code> sigue siendo Data Class (smell #6): la lógica vive en el servicio</td>
+</tr>
+<tr>
+<td>12</td>
+<td>¿La persistencia está probada?</td>
+<td>⚠️</td>
+<td>No tiene tests propios (requeriría <code>tempdir</code>); documentado como deuda consciente</td>
+</tr>
+</tbody>
+</table>
+<h2 id="73-hallazgos-de-la-revision">7.3 Hallazgos de la revisión</h2>
+<p><strong>Fortalezas verificables:</strong>
+- Los 4 refactorings exigidos aplicados y verificados con salida idéntica.
+- 11 pruebas automáticas en verde que cubren las 6 operaciones.
+- Reglas de negocio centralizadas (requisitos y estados) en un solo lugar.
+- Estructura modular: 7 archivos con responsabilidades identificables.</p>
+<p><strong>Deuda pendiente consciente (3 hallazgos abiertos):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Hallazgo</th>
+<th>Riesgo</th>
+<th>Decisión</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#10: matriz de transiciones con <code>if/elif</code></td>
+<td>Alto si cambian las reglas</td>
+<td>No se refactorizó: fuera del alcance mínimo exigido (4 refactorings) y priorizaron los smells de mayor riesgo</td>
+</tr>
+<tr>
+<td>#11: entidades Data Class</td>
+<td>Medio</td>
+<td>Igual que el anterior; exige rediseñar el modelo</td>
+</tr>
+<tr>
+<td>#12: persistencia sin tests</td>
+<td>Bajo para este alcance</td>
+<td>Se documenta como mejora futura</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusión de la revisión:</strong> el código cumple los criterios esenciales de
+calidad interna tras el refactor; los 3 hallazgos abiertos están
+documentados, justificados y con riesgo acotado. Ninguno afecta la
+funcionalidad observable del sistema.</p>
+<h2 id="74-reproduccion-de-la-revision">7.4 Reproducción de la revisión</h2>
+<pre><code class="language-bash">py -m unittest discover -s tests -v   # 11/11 OK
+py src/main.py                        # demostración completa
+git log --oneline                     # trazabilidad por etapa
+git diff estado-inicial estado-refactorizado --stat
+</code></pre>
+<hr />
+<h1 id="seccion-8-conclusiones-y-aprendizaje">Sección 8 — Conclusiones y aprendizaje</h1>
+<blockquote>
+<p>Texto destinado al <strong>informe PDF</strong>.
+⚠️ <strong>BORRADOR A PERSONALIZAR:</strong> los pasajes marcados con ⚠️ deben revisarse y
+adaptarse con la experiencia real de quien presenta antes de entregar.</p>
+</blockquote>
+<h2 id="81-conclusiones-del-trabajo">8.1 Conclusiones del trabajo</h2>
+<p>El TPI permitió recorrer el ciclo completo de mantenimiento de software sobre
+un sistema real y funcional: desde la selección y descripción del sistema base,
+pasando por el diagnóstico de su calidad, hasta el refactoring y su verificación
+con pruebas.</p>
+<p><strong>Resultados cuantitativos:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Estado inicial</th>
+<th>Estado final</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code smells diagnosticados</td>
+<td>10</td>
+<td>6 resueltos / 4 documentados como deuda</td>
+</tr>
+<tr>
+<td>Refactorings aplicados</td>
+<td>0</td>
+<td>4 (Extract Method, Move Method, Parameter Object, Rename)</td>
+</tr>
+<tr>
+<td>Pruebas automatizadas</td>
+<td>0</td>
+<td>11 (todas en verde)</td>
+</tr>
+<tr>
+<td>Archivos en <code>src/</code></td>
+<td>2 (modelos, servicios)</td>
+<td>5 + 1 demo + 1 suite</td>
+</tr>
+<tr>
+<td>Tamaño de <code>servicios.py</code></td>
+<td>285 líneas (God Class)</td>
+<td>204 líneas con responsabilidades separadas</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Principales conclusiones técnicas:</strong></p>
+<ol>
+<li><strong>La calidad externa no necesitó cambios.</strong> El usuario experimentó el mismo
+   comportamiento antes y después; la demostración y las 11 pruebas lo
+   confirman. Refactorizar es cambiar la estructura, no el comportamiento.</li>
+<li><strong>La duplicación era la deuda más cara.</strong> La regla de búsqueda estaba
+   escrita en 5 lugares: cualquier cambio obligaba a 5 modificaciones
+   sincronizadas. Extraer <code>buscar_solicitud()</code> la redujo a una sola fuente de
+   verdad.</li>
+<li><strong>Separar la persistencia del negocio habilitó las pruebas.</strong> El
+   <code>RepositorioSolicitudes</code> con inyección en el constructor hizo posible
+   testear el servicio sin tocar el disco.</li>
+<li><strong>Centralizar reglas de negocio ahorra riesgo futuro.</strong> Los requisitos
+   documentales ahora se agregan en una línea del diccionario <code>REQUISITOS</code>.</li>
+</ol>
+<p><strong>Deuda pendiente consciente (ver sección 7):</strong> la matriz de transiciones con
+<code>if/elif</code>, las entidades Data Class y la falta de tests de persistencia
+permanecen documentados y con riesgo acotado.</p>
+<h2 id="82-aprendizaje-personal">8.2 Aprendizaje personal</h2>
+<p>⚠️ <strong>Personalizar con la experiencia real.</strong> Borrador sugerido:</p>
+<ul>
+<li>
+<p><strong>Concepto que más costó entender:</strong> los principios SOLID, especialmente la
+  Inversión de Dependencias. Al principio parecían abstracciones teóricas; se
+  entendieron recién al ejecutar el Move Method y ver cómo el servicio dejó de
+  depender del archivo JSON concreto. ⚠️ <em>Revisar: si te costó otro concepto,
+  reemplazar.</em></p>
+</li>
+<li>
+<p><strong>Lo más interesante:</strong> descubrir que un "código que funciona" puede tener
+  mala calidad interna al mismo tiempo. La calidad externa e interna son
+  dimensiones distintas: el sistema aprobaba solicitudes (bien para el usuario)
+  y al mismo tiempo era costoso de mantener (mal para el desarrollador). ⚠️
+  <em>Personalizar con tu propia sensación.</em></p>
+</li>
+<li>
+<p><strong>Aplicación en un trabajo real:</strong> el TPI mostró que el refactoring no es un
+  lujo académico: cada smell diagnosticado correspondía a un escenario concreto
+  de costo (tocar 5 lugares para un cambio, perder un dato al agregar un
+  atributo). En un equipo, esa deuda se paga con intereses. ⚠️ <em>Completar con
+  lo que llevarías a tu empleo o futuros proyectos.</em></p>
+</li>
+<li>
+<p><strong>Sobre el uso de IA:</strong> se utilizó IA (OpenCode + Mimo) como herramienta de
+  asistencia y guía, declarándolo según lo permitido por la cátedra. La
+  autoría de las decisiones (selección del dominio, alcance, revisión de cada
+  entregable y defensa) es propia; la IA aceleró la producción de código y
+  documentos, pero cada resultado fue revisado, ejecutado y validado antes de
+  aceptarse. ⚠️ <em>Ajustar el tono según lo que consideres justo decir.</em></p>
+</li>
+</ul>
+<h2 id="83-cierre">8.3 Cierre</h2>
+<p>El trabajo demostró que es posible mejorar la calidad interna de un sistema
+de forma incremental y verificable, con un proceso trazable (etiquetas Git por
+etapa) y sin alterar el comportamiento observable. La siguiente etapa de
+evolución sería completar la deuda documentada en el code review y sumar
+pruebas de persistencia.</p>
+<hr />
+<p>⚠️ <strong>Checklist antes de entregar:</strong>
+- [ ] Revisar y personalizar los 4 puntos de 8.2 con mi experiencia real
+- [ ] Verificar que los números de 8.1 coincidan con el repo
+- [ ] Pegar las secciones 1-8 en el informe PDF en orden
+- [ ] Generar la carpeta <code>/docs/prompts/</code> con el registro final de prompts
+- [ ] Subir el repo a GitHub
+- [ ] Grabar el video de defensa (10-15 min, cámara y voz propias)</p>
+<hr />
+<h1 id="anexos">Anexos</h1>
+<h2 id="anexo-a-estructura-del-repositorio-y-trazabilidad-por-etapas">Anexo A — Estructura del repositorio y trazabilidad por etapas</h2>
+<pre><code>Trabajo-Integrador-Metodologia-II/
+├── README.md
+├── .gitignore
+├── docs/
+│   ├── 00-portada-indice.md
+│   ├── 01-descripcion-sistema.md
+│   ├── 02-calidad-externa-interna.md
+│   ├── 03-code-smells.md
+│   ├── 04-solid-clean-code.md
+│   ├── 05-refactorings.md
+│   ├── 06-pruebas.md
+│   ├── 07-code-review.md
+│   ├── 08-conclusiones.md
+│   └── informe-completo.md
+├── src/
+│   ├── modelos.py          (entidades)
+│   ├── servicios.py        (reglas de negocio)
+│   ├── repositorio.py      (persistencia JSON)
+│   ├── requisitos.py       (documentos por tipo)
+│   ├── constantes.py       (estados y códigos)
+│   └── main.py             (demostración)
+└── tests/
+    └── test_solicitudes.py (11 pruebas)
+</code></pre>
+<h3 id="etiquetas-tags-oficiales-del-tpi">Etiquetas (tags) oficiales del TPI</h3>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Commit</th>
+<th>Marca</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>estado-inicial</code></td>
+<td><code>c69685d</code></td>
+<td>Sistema base seleccionado y descrito (etapa 1)</td>
+</tr>
+<tr>
+<td><code>etapa-diagnostico</code></td>
+<td><code>78d2c99</code></td>
+<td>Deuda técnica y 10 code smells (etapa 3)</td>
+</tr>
+<tr>
+<td><code>estado-refactorizado</code></td>
+<td><code>8f9af1b</code></td>
+<td>Código con los 4 refactorings aplicados (etapa 5)</td>
+</tr>
+<tr>
+<td><code>etapa-refactoring</code></td>
+<td><code>6a909d5</code></td>
+<td>Documentación de los refactorings (etapa 5)</td>
+</tr>
+<tr>
+<td><code>etapa-pruebas</code></td>
+<td><code>9b1efbf</code></td>
+<td>Suite de 11 pruebas + verificación (etapa 6)</td>
+</tr>
+<tr>
+<td><code>etapa-docs</code></td>
+<td><code>f25163d</code></td>
+<td>Code review con checklist (etapa 7)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="anexo-b-declaracion-de-uso-de-inteligencia-artificial">Anexo B — Declaración de uso de inteligencia artificial</h2>
+<p>Este trabajo fue producido con asistencia de inteligencia artificial (herramienta
+OpenCode con el modelo Mimo), en los términos permitidos por la cátedra.</p>
+<p><strong>Cómo se utilizó:</strong> la IA actuó como guía de proceso y asistente de producción:
+propuso el plan de etapas, redactó borradores de documentación, generó el
+código base y los refactorings, y ejecutó y verificó los comandos de Git y de
+las pruebas.</p>
+<p><strong>Qué es responsabilidad de la autora:</strong> la selección del dominio y del
+alcance, la revisión de cada entregable antes de aceptarlo, la decisión sobre
+qué refactorings aplicar y con qué criterio, la personalización de las
+conclusiones, y la defensa oral del trabajo completo. Cada resultado generado
+fue ejecutado, observado y validado antes de incorporarse al repositorio.</p>
+<h2 id="anexo-c-como-reproducir-el-trabajo">Anexo C — Cómo reproducir el trabajo</h2>
+<pre><code class="language-bash"># 1. Clonar el repositorio
+git clone git@github.com:GuirinV/Trabajo-Integrador-Metodologia-II.git
+cd Trabajo-Integrador-Metodologia-II
+
+# 2. Ejecutar la demostración (requiere Python 3.8+)
+py src/main.py
+
+# 3. Ejecutar las pruebas (11/11 deben pasar)
+py -m unittest discover -s tests -v
+
+# 4. Ver la trazabilidad por etapas
+git log --oneline
+git tag
+
+# 5. Comparar estado inicial vs. refactorizado
+git diff estado-inicial estado-refactorizado --stat
+
+# 6. Ver un refactoring puntual
+git show d4df731    # Extract Method
+git show 8eb2737    # Move Method
+git show de6a4ab    # Introduce Parameter Object
+git show 8f9af1b    # Rename (constantes)
+</code></pre>
+<hr />
+</body>
+</html>
