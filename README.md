@@ -3,7 +3,7 @@
 **Trabajo Práctico Integrador:** diagnóstico y refactorización de un sistema de
 Gestión de Solicitudes Académicas.
 
-- **Autora:** Veronica Guirin
+- **Autoras:** Rosario Elortegui y Veronica Guirin
 - **Materia:** Metodología de Sistemas II
 - **Carrera:** Tecnicatura Universitaria en Programación (UTN) — modalidad a distancia
 - **Lenguaje:** Python 3
