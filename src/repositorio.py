@@ -13,52 +13,74 @@ class RepositorioSolicitudes:
 
     def guardar(self, alumnos, solicitudes):
         datos = {"alumnos": [], "solicitudes": []}
-        for a in alumnos:
+        for alumno in alumnos:
             datos["alumnos"].append(
                 {
-                    "legajo": a.legajo,
-                    "nombre": a.nombre,
-                    "carrera": a.carrera,
-                    "email": a.email,
+                    "legajo": alumno.legajo,
+                    "nombre": alumno.nombre,
+                    "carrera": alumno.carrera,
+                    "email": alumno.email,
                 }
             )
-        for s in solicitudes:
-            docs = []
-            for d in s.documentos:
-                docs.append({"nombre": d.nombre, "tipo": d.tipo, "obligatorio": d.obligatorio})
+        for solicitud in solicitudes:
+            documentos = []
+            for documento in solicitud.documentos:
+                documentos.append(
+                    {
+                        "nombre": documento.nombre,
+                        "tipo": documento.tipo,
+                        "obligatorio": documento.obligatorio,
+                    }
+                )
             datos["solicitudes"].append(
                 {
-                    "id": s.id,
-                    "legajo": s.legajo_alumno,
-                    "tipo": s.tipo,
-                    "estado": s.estado,
-                    "fecha": s.fecha_creacion,
-                    "documentos": docs,
-                    "motivo": s.motivo,
+                    "id": solicitud.id,
+                    "legajo": solicitud.legajo_alumno,
+                    "tipo": solicitud.tipo,
+                    "estado": solicitud.estado,
+                    "fecha": solicitud.fecha_creacion,
+                    "documentos": documentos,
+                    "motivo": solicitud.motivo,
                 }
             )
         carpeta = os.path.dirname(self.archivo)
         if carpeta:
             os.makedirs(carpeta, exist_ok=True)
-        f = open(self.archivo, "w")
-        f.write(json.dumps(datos, indent=2))
-        f.close()
+        with open(self.archivo, "w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo, indent=2)
 
     def cargar(self):
         alumnos = []
         solicitudes = []
         if not os.path.exists(self.archivo):
             return alumnos, solicitudes
-        f = open(self.archivo, "r")
-        contenido = f.read()
-        f.close()
-        datos = json.loads(contenido)
-        for a in datos["alumnos"]:
-            alumnos.append(Alumno(a["legajo"], a["nombre"], a["carrera"], a["email"]))
-        for s in datos["solicitudes"]:
-            solicitud = Solicitud(s["id"], s["legajo"], s["tipo"], s["estado"], s["fecha"])
-            solicitud.motivo = s.get("motivo")
-            for d in s["documentos"]:
-                solicitud.documentos.append(Documento(d["nombre"], d["tipo"], d["obligatorio"]))
+        with open(self.archivo, "r", encoding="utf-8") as archivo:
+            datos = json.load(archivo)
+        for dato_alumno in datos["alumnos"]:
+            alumnos.append(
+                Alumno(
+                    dato_alumno["legajo"],
+                    dato_alumno["nombre"],
+                    dato_alumno["carrera"],
+                    dato_alumno["email"],
+                )
+            )
+        for dato_solicitud in datos["solicitudes"]:
+            solicitud = Solicitud(
+                dato_solicitud["id"],
+                dato_solicitud["legajo"],
+                dato_solicitud["tipo"],
+                dato_solicitud["estado"],
+                dato_solicitud["fecha"],
+            )
+            solicitud.motivo = dato_solicitud.get("motivo")
+            for dato_documento in dato_solicitud["documentos"]:
+                solicitud.documentos.append(
+                    Documento(
+                        dato_documento["nombre"],
+                        dato_documento["tipo"],
+                        dato_documento["obligatorio"],
+                    )
+                )
             solicitudes.append(solicitud)
         return alumnos, solicitudes

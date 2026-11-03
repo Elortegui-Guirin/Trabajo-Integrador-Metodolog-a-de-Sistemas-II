@@ -26,32 +26,26 @@ class ServicioSolicitudes:
         self.alumnos, self.solicitudes = self.repositorio.cargar()
 
     def buscar_solicitud(self, id_solicitud):
-        for s in self.solicitudes:
-            if s.id == id_solicitud:
-                return s
+        for solicitud in self.solicitudes:
+            if solicitud.id == id_solicitud:
+                return solicitud
         return None
 
     def guardar(self):
         self.repositorio.guardar(self.alumnos, self.solicitudes)
 
-    # ---------------------------------------------------------------
-    # ALTA DE ALUMNO
-    # ---------------------------------------------------------------
     def alta_alumno(self, legajo, nombre, carrera, email):
-        a = Alumno(legajo, nombre, carrera, email)
-        self.alumnos.append(a)
+        alumno = Alumno(legajo, nombre, carrera, email)
+        self.alumnos.append(alumno)
         self.guardar()
         print("Alumno dado de alta: " + nombre + " (legajo " + str(legajo) + ")")
-        return a
+        return alumno
 
-    # ---------------------------------------------------------------
-    # CREAR SOLICITUD
-    # ---------------------------------------------------------------
     def crear_solicitud(self, legajo, tipo):
         alumno_encontrado = None
-        for a in self.alumnos:
-            if a.legajo == legajo:
-                alumno_encontrado = a
+        for alumno in self.alumnos:
+            if alumno.legajo == legajo:
+                alumno_encontrado = alumno
         if alumno_encontrado is None:
             print("Error: el legajo " + str(legajo) + " no existe")
             return None
@@ -80,9 +74,6 @@ class ServicioSolicitudes:
         )
         return solicitud
 
-    # ---------------------------------------------------------------
-    # ADJUNTAR DOCUMENTO
-    # ---------------------------------------------------------------
     def adjuntar_documento(self, id_solicitud, nombre, tipo, obligatorio):
         solicitud = self.buscar_solicitud(id_solicitud)
         if solicitud is None:
@@ -91,34 +82,31 @@ class ServicioSolicitudes:
         if solicitud.estado == ESTADO_APROBADA or solicitud.estado == ESTADO_RECHAZADA:
             print("Error: la solicitud ya fue resuelta, no se pueden adjuntar documentos")
             return None
-        doc = Documento(nombre, tipo, obligatorio)
-        solicitud.documentos.append(doc)
+        documento = Documento(nombre, tipo, obligatorio)
+        solicitud.documentos.append(documento)
         self.guardar()
         print("Documento '" + nombre + "' adjuntado a la solicitud " + str(id_solicitud))
-        return doc
+        return documento
 
-    # ---------------------------------------------------------------
-    # CAMBIAR ESTADO
-    # ---------------------------------------------------------------
     def cambiar_estado(self, id_solicitud, nuevo_estado):
         solicitud = self.buscar_solicitud(id_solicitud)
         if solicitud is None:
             print("Error: la solicitud " + str(id_solicitud) + " no existe")
             return False
 
-        puede = False
+        transicion_valida = False
         if solicitud.estado == ESTADO_PENDIENTE and nuevo_estado == ESTADO_EN_REVISION:
-            puede = True
+            transicion_valida = True
         elif solicitud.estado == ESTADO_EN_REVISION and (
             nuevo_estado == ESTADO_APROBADA or nuevo_estado == ESTADO_RECHAZADA
         ):
-            puede = True
+            transicion_valida = True
         elif solicitud.estado == ESTADO_PENDIENTE and (
             nuevo_estado == ESTADO_APROBADA or nuevo_estado == ESTADO_RECHAZADA
         ):
-            puede = True
+            transicion_valida = True
 
-        if not puede:
+        if not transicion_valida:
             print(
                 "Transicion invalida: "
                 + solicitud.estado
@@ -138,79 +126,67 @@ class ServicioSolicitudes:
         print("Solicitud " + str(id_solicitud) + " ahora esta en estado " + nuevo_estado)
         return True
 
-    # ---------------------------------------------------------------
-    # APROBAR  (valida documentos obligatorios)
-    # ---------------------------------------------------------------
     def aprobar(self, id_solicitud):
-        solicitud_encontrada = self.buscar_solicitud(id_solicitud)
-        if solicitud_encontrada is None:
+        solicitud = self.buscar_solicitud(id_solicitud)
+        if solicitud is None:
             print("Error: solicitud " + str(id_solicitud) + " no encontrada")
             return RESULTADO_NO_ENCONTRADA
-        if solicitud_encontrada.estado == ESTADO_APROBADA or solicitud_encontrada.estado == ESTADO_RECHAZADA:
+        if solicitud.estado == ESTADO_APROBADA or solicitud.estado == ESTADO_RECHAZADA:
             print("Error: la solicitud ya fue resuelta")
             return RESULTADO_YA_RESUELTA
 
-        requisitos = RequisitosDocumentales(solicitud_encontrada.tipo)
-        faltantes = requisitos.faltantes(solicitud_encontrada.documentos)
+        requisitos = RequisitosDocumentales(solicitud.tipo)
+        faltantes = requisitos.faltantes(solicitud.documentos)
 
         if len(faltantes) > 0:
             print("No se puede aprobar. Faltan documentos: " + str(faltantes))
-            solicitud_encontrada.estado = ESTADO_EN_REVISION
+            solicitud.estado = ESTADO_EN_REVISION
             self.guardar()
             return RESULTADO_FALTAN_DOCUMENTOS
 
-        solicitud_encontrada.estado = ESTADO_APROBADA
+        solicitud.estado = ESTADO_APROBADA
         self.guardar()
         print("Solicitud " + str(id_solicitud) + " APROBADA con exito")
         return RESULTADO_EXITO
 
-    # ---------------------------------------------------------------
-    # RECHAZAR
-    # ---------------------------------------------------------------
     def rechazar(self, id_solicitud, motivo):
-        solicitud_encontrada = self.buscar_solicitud(id_solicitud)
-        if solicitud_encontrada is None:
+        solicitud = self.buscar_solicitud(id_solicitud)
+        if solicitud is None:
             print("Error: solicitud " + str(id_solicitud) + " no encontrada")
             return RESULTADO_NO_ENCONTRADA
-        if solicitud_encontrada.estado == ESTADO_APROBADA or solicitud_encontrada.estado == ESTADO_RECHAZADA:
+        if solicitud.estado == ESTADO_APROBADA or solicitud.estado == ESTADO_RECHAZADA:
             print("Error: la solicitud ya fue resuelta")
             return RESULTADO_YA_RESUELTA
 
-        solicitud_encontrada.estado = ESTADO_RECHAZADA
-        solicitud_encontrada.motivo = motivo
+        solicitud.estado = ESTADO_RECHAZADA
+        solicitud.motivo = motivo
         self.guardar()
         print("Solicitud " + str(id_solicitud) + " RECHAZADA. Motivo: " + motivo)
         return RESULTADO_EXITO
 
-    # ---------------------------------------------------------------
-    # LISTAR SOLICITDES DE UN ALUMNO
-    # ---------------------------------------------------------------
     def listar_solicitudes_de_alumno(self, legajo):
         resultado = []
-        for s in self.solicitudes:
-            if s.legajo_alumno == legajo:
-                resultado.append(s)
+        for solicitud in self.solicitudes:
+            if solicitud.legajo_alumno == legajo:
+                resultado.append(solicitud)
         if len(resultado) == 0:
             print("El legajo " + str(legajo) + " no tiene solicitudes")
         else:
             print("Solicitudes del legajo " + str(legajo) + ":")
-            for s in resultado:
+            for solicitud in resultado:
                 print(
                     "  #"
-                    + str(s.id)
+                    + str(solicitud.id)
                     + " "
-                    + s.tipo
+                    + solicitud.tipo
                     + " "
-                    + s.estado
+                    + solicitud.estado
                     + " ("
-                    + str(len(s.documentos))
+                    + str(len(solicitud.documentos))
                     + " documentos)"
                 )
         return resultado
 
-    # ---------------------------------------------------------------
-    # VER DETALLE
-    # ---------------------------------------------------------------
     def ver_detalle(self, id_solicitud):
         solicitud = self.buscar_solicitud(id_solicitud)
         if solicitud is None:
@@ -222,12 +198,12 @@ class ServicioSolicitudes:
         print("  Fecha: " + solicitud.fecha_creacion)
         print("  Legajo del alumno: " + str(solicitud.legajo_alumno))
         print("  Documentos:")
-        for d in solicitud.documentos:
-            if d.obligatorio:
-                obs = "obligatorio"
+        for documento in solicitud.documentos:
+            if documento.obligatorio:
+                condicion = "obligatorio"
             else:
-                obs = "opcional"
-            print("    - " + d.nombre + " (" + d.tipo + ", " + obs + ")")
+                condicion = "opcional"
+            print("    - " + documento.nombre + " (" + documento.tipo + ", " + condicion + ")")
         if solicitud.motivo:
             print("  Motivo de rechazo: " + solicitud.motivo)
         return solicitud
