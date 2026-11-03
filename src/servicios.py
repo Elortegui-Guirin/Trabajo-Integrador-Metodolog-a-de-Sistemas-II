@@ -127,6 +127,12 @@ class ServicioSolicitudes:
             )
             return False
 
+        if nuevo_estado == ESTADO_APROBADA:
+            faltantes = RequisitosDocumentales(solicitud.tipo).faltantes(solicitud.documentos)
+            if len(faltantes) > 0:
+                print("No se puede aprobar. Faltan documentos: " + str(faltantes))
+                return False
+
         solicitud.estado = nuevo_estado
         self.guardar()
         print("Solicitud " + str(id_solicitud) + " ahora esta en estado " + nuevo_estado)

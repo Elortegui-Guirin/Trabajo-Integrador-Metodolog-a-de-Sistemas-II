@@ -109,6 +109,21 @@ class TestTransiciones(unittest.TestCase):
         self.assertFalse(valido)
         self.assertEqual(s.buscar_solicitud(sol.id).estado, ESTADO_PENDIENTE)
 
+    def test_cambiar_estado_a_aprobada_sin_documentos_falla(self):
+        s = crear_servicio()
+        sol = s.crear_solicitud("A-1001", "CERTIFICADO")
+        valido = s.cambiar_estado(sol.id, ESTADO_APROBADA)
+        self.assertFalse(valido)
+        self.assertEqual(s.buscar_solicitud(sol.id).estado, ESTADO_PENDIENTE)
+
+    def test_cambiar_estado_a_aprobada_con_documentos_exito(self):
+        s = crear_servicio()
+        sol = s.crear_solicitud("A-1001", "CERTIFICADO")
+        s.adjuntar_documento(sol.id, "Comprobante de pago", "PDF", True)
+        valido = s.cambiar_estado(sol.id, ESTADO_APROBADA)
+        self.assertTrue(valido)
+        self.assertEqual(s.buscar_solicitud(sol.id).estado, ESTADO_APROBADA)
+
 
 class TestDocumentos(unittest.TestCase):
 
