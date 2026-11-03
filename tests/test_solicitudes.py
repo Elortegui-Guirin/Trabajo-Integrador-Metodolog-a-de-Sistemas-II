@@ -5,6 +5,7 @@ Corren con:  py -m unittest discover -s tests
 
 import os
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -19,6 +20,7 @@ from constantes import (
     RESULTADO_NO_ENCONTRADA,
     RESULTADO_YA_RESUELTA,
 )
+from repositorio import RepositorioSolicitudes
 from servicios import ServicioSolicitudes
 
 
@@ -131,6 +133,22 @@ class TestConsultas(unittest.TestCase):
     def test_aprobar_solicitud_inexistente(self):
         s = crear_servicio()
         self.assertEqual(s.aprobar(999), RESULTADO_NO_ENCONTRADA)
+
+
+class TestPersistencia(unittest.TestCase):
+
+    def test_motivo_de_rechazo_se_conserva_al_recargar(self):
+        with tempfile.TemporaryDirectory() as carpeta:
+            archivo = os.path.join(carpeta, "datos.json")
+            servicio = ServicioSolicitudes(repositorio=RepositorioSolicitudes(archivo))
+            servicio.alta_alumno("A-1001", "Veronica Guirin", "Programacion", "v@utn.edu.ar")
+            sol = servicio.crear_solicitud("A-1001", "CERTIFICADO")
+            servicio.rechazar(sol.id, "No abono la tasa")
+
+            recargado = ServicioSolicitudes(repositorio=RepositorioSolicitudes(archivo))
+            solicitud = recargado.buscar_solicitud(sol.id)
+            self.assertEqual(solicitud.estado, ESTADO_RECHAZADA)
+            self.assertEqual(solicitud.motivo, "No abono la tasa")
 
 
 if __name__ == "__main__":

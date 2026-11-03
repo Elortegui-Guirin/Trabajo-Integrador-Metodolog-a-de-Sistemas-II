@@ -34,10 +34,12 @@ class RepositorioSolicitudes:
                     "estado": s.estado,
                     "fecha": s.fecha_creacion,
                     "documentos": docs,
+                    "motivo": s.motivo,
                 }
             )
-        if not os.path.exists("datos"):
-            os.makedirs("datos")
+        carpeta = os.path.dirname(self.archivo)
+        if carpeta:
+            os.makedirs(carpeta, exist_ok=True)
         f = open(self.archivo, "w")
         f.write(json.dumps(datos, indent=2))
         f.close()
@@ -55,6 +57,7 @@ class RepositorioSolicitudes:
             alumnos.append(Alumno(a["legajo"], a["nombre"], a["carrera"], a["email"]))
         for s in datos["solicitudes"]:
             solicitud = Solicitud(s["id"], s["legajo"], s["tipo"], s["estado"], s["fecha"])
+            solicitud.motivo = s.get("motivo")
             for d in s["documentos"]:
                 solicitud.documentos.append(Documento(d["nombre"], d["tipo"], d["obligatorio"]))
             solicitudes.append(solicitud)

@@ -21,3 +21,4 @@ class Solicitud:
         self.estado = estado
         self.fecha_creacion = fecha_creacion
         self.documentos = []
+        self.motivo = None

@@ -222,6 +222,6 @@ class ServicioSolicitudes:
             else:
                 obs = "opcional"
             print("    - " + d.nombre + " (" + d.tipo + ", " + obs + ")")
-        if hasattr(solicitud, "motivo"):
+        if solicitud.motivo:
             print("  Motivo de rechazo: " + solicitud.motivo)
         return solicitud
