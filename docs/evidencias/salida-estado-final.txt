@@ -1,0 +1,28 @@
+
+===== 1) Alta de alumno =====
+Alumno dado de alta: Veronica Guirin (legajo A-1001)
+
+===== 2) Solicitud de EQUIVALENCIA =====
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Documento 'Plan de estudio' adjuntado a la solicitud 1
+No se puede aprobar. Faltan documentos: ['syllabus']
+
+===== 3) Se adjunta el syllabus y se aprueba =====
+Documento 'Syllabus' adjuntado a la solicitud 1
+Solicitud 1 APROBADA con exito
+
+===== 4) Solicitud de CERTIFICADO rechazada =====
+Solicitud 2 creada para Veronica Guirin el 03/11/2026
+Solicitud 2 RECHAZADA. Motivo: No abono la tasa administrativa
+
+===== 5) Listado y detalle =====
+Solicitudes del legajo A-1001:
+  #1 EQUIVALENCIA APROBADA (2 documentos)
+  #2 CERTIFICADO RECHAZADA (0 documentos)
+Detalle de la solicitud #2
+  Tipo: CERTIFICADO
+  Estado: RECHAZADA
+  Fecha: 03/11/2026
+  Legajo del alumno: A-1001
+  Documentos:
+  Motivo de rechazo: No abono la tasa administrativa

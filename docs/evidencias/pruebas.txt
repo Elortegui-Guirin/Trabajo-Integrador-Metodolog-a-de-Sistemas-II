@@ -1,0 +1,76 @@
+test_aprobar_certificado_con_comprobante_de_pago (test_solicitudes.TestAprobar.test_aprobar_certificado_con_comprobante_de_pago) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Documento 'Comprobante de pago' adjuntado a la solicitud 1
+Solicitud 1 APROBADA con exito
+ok
+test_aprobar_con_documentos_obligatorios_exito (test_solicitudes.TestAprobar.test_aprobar_con_documentos_obligatorios_exito) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Documento 'Plan de estudio' adjuntado a la solicitud 1
+Documento 'Syllabus' adjuntado a la solicitud 1
+Solicitud 1 APROBADA con exito
+ok
+test_aprobar_sin_documentos_obligatorios_falla (test_solicitudes.TestAprobar.test_aprobar_sin_documentos_obligatorios_falla) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+No se puede aprobar. Faltan documentos: ['comprobante de pago']
+ok
+test_aprobar_solicitud_inexistente (test_solicitudes.TestConsultas.test_aprobar_solicitud_inexistente) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Error: solicitud 999 no encontrada
+ok
+test_listar_y_detalle_de_alumno (test_solicitudes.TestConsultas.test_listar_y_detalle_de_alumno) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Solicitud 2 creada para Veronica Guirin el 03/11/2026
+Solicitudes del legajo A-1001:
+  #1 CERTIFICADO PENDIENTE (0 documentos)
+  #2 EQUIVALENCIA PENDIENTE (0 documentos)
+Detalle de la solicitud #1
+  Tipo: CERTIFICADO
+  Estado: PENDIENTE
+  Fecha: 03/11/2026
+  Legajo del alumno: A-1001
+  Documentos:
+ok
+test_crear_solicitud_con_legajo_inexistente (test_solicitudes.TestCrearSolicitud.test_crear_solicitud_con_legajo_inexistente) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Error: el legajo NO-EXISTE no existe
+ok
+test_crear_solicitud_con_tipo_invalido (test_solicitudes.TestCrearSolicitud.test_crear_solicitud_con_tipo_invalido) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Error: tipo de solicitud invalido
+ok
+test_crear_solicitud_valida (test_solicitudes.TestCrearSolicitud.test_crear_solicitud_valida) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+ok
+test_adjuntar_documento_a_solicitud_resuelta_falla (test_solicitudes.TestDocumentos.test_adjuntar_documento_a_solicitud_resuelta_falla) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Solicitud 1 RECHAZADA. Motivo: Motivo
+Error: la solicitud ya fue resuelta, no se pueden adjuntar documentos
+ok
+test_motivo_de_rechazo_se_conserva_al_recargar (test_solicitudes.TestPersistencia.test_motivo_de_rechazo_se_conserva_al_recargar) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Solicitud 1 RECHAZADA. Motivo: No abono la tasa
+ok
+test_rechazar_con_motivo (test_solicitudes.TestRechazar.test_rechazar_con_motivo) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Solicitud 1 RECHAZADA. Motivo: No abono la tasa
+ok
+test_rechazar_solicitud_ya_resuelta_falla (test_solicitudes.TestRechazar.test_rechazar_solicitud_ya_resuelta_falla) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Solicitud 1 RECHAZADA. Motivo: Motivo 1
+Error: la solicitud ya fue resuelta
+ok
+test_cambiar_estado_a_aprobada_con_documentos_exito (test_solicitudes.TestTransiciones.test_cambiar_estado_a_aprobada_con_documentos_exito) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Documento 'Comprobante de pago' adjuntado a la solicitud 1
+Solicitud 1 ahora esta en estado APROBADA
+ok
+test_cambiar_estado_a_aprobada_sin_documentos_falla (test_solicitudes.TestTransiciones.test_cambiar_estado_a_aprobada_sin_documentos_falla) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+No se puede aprobar. Faltan documentos: ['comprobante de pago']
+ok
+test_transicion_invalida_rechazada (test_solicitudes.TestTransiciones.test_transicion_invalida_rechazada) ... Alumno dado de alta: Veronica Guirin (legajo A-1001)
+Solicitud 1 creada para Veronica Guirin el 03/11/2026
+Transicion invalida: PENDIENTE -> NO_EXISTE
+ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.011s
+
+OK

@@ -61,8 +61,10 @@ borrar antes la carpeta `datos/`.
 ```
 ├── README.md
 ├── docs/
-│   ├── checklist-code-review.md        ← checklist técnico, correcciones y deuda pendiente (etapa 7)
-│   └── Trabajo Integrador Metodologia II.html   ← informe
+│   ├── Trabajo Integrador Metodologia II.html   ← informe
+│   ├── checklist-code-review.md   ← checklist técnico, correcciones y deuda pendiente (etapa 7)
+│   ├── decisiones-tecnicas.md     ← decisiones por etapa y su justificación
+│   └── evidencias/                ← salidas antes/después de la demostración y de las pruebas
 ├── src/
 │   ├── main.py           ← demostración por consola
 │   ├── modelos.py        ← entidades: Alumno, Solicitud, Documento
