@@ -8,7 +8,7 @@ class RequisitosDocumentales:
 
     REQUISITOS = {
         "EQUIVALENCIA": ["plan de estudio", "syllabus"],
-        "CERTIFICADO": ["probante de pago"],
+        "CERTIFICADO": ["comprobante de pago"],
         "RECLAMO": [],
     }
 

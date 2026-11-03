@@ -72,6 +72,14 @@ class TestAprobar(unittest.TestCase):
         self.assertEqual(resultado, RESULTADO_EXITO)
         self.assertEqual(s.buscar_solicitud(sol.id).estado, ESTADO_APROBADA)
 
+    def test_aprobar_certificado_con_comprobante_de_pago(self):
+        s = crear_servicio()
+        sol = s.crear_solicitud("A-1001", "CERTIFICADO")
+        s.adjuntar_documento(sol.id, "Comprobante de pago", "PDF", True)
+        resultado = s.aprobar(sol.id)
+        self.assertEqual(resultado, RESULTADO_EXITO)
+        self.assertEqual(s.buscar_solicitud(sol.id).estado, ESTADO_APROBADA)
+
 
 class TestRechazar(unittest.TestCase):
 
